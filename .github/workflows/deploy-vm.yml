@@ -16,19 +16,56 @@ jobs:
         username: ${{ secrets.VM1_SSH_USER }}
         key: ${{ secrets.VM1_SSH_PRIVATE_KEY }}
         script: |
-          # Ensure project directory exists
-          mkdir -p ~/projects
-          cd ~/projects
-          
-          # Clone if not exists, else pull
-          if [ ! -d "devops-test" ]; then
-            git clone https://github.com/${{ github.repository }}.git
-            cd devops-test
-          else
-            cd devops-test
-            git pull origin main
-          fi
-          
-          # Run Ansible from VM1
-          cd ansible
-          ansible-playbook playbooks/deploy.yml
+          set -euo pipefail
+
+            # -------- Variables (dynamic user from secret)
+            SSH_USER="${{ secrets.VM1_SSH_USER }}"
+            BASE_DIR="/home/${SSH_USER}/projects"
+            REPO_NAME="devops-test-pena"
+            REPO_DIR="${BASE_DIR}/${REPO_NAME}"
+            REPO_URL="https://github.com/${{ github.repository }}.git"
+
+            echo "[INFO] Running as: $(whoami)"
+            echo "[INFO] HOME: ${HOME}"
+            echo "[INFO] BASE_DIR: ${BASE_DIR}"
+            echo "[INFO] REPO_DIR: ${REPO_DIR}"
+            echo "[INFO] REPO_URL: ${REPO_URL}"
+
+            # -------- Ensure base directory exists
+            mkdir -p "${BASE_DIR}"
+
+            # -------- Clone or update repository
+            if [ ! -d "${REPO_DIR}/.git" ]; then
+              echo "[INFO] Repo not found, cloning..."
+              git clone --depth 1 "${REPO_URL}" "${REPO_DIR}"
+            else
+              echo "[INFO] Repo exists, updating..."
+              cd "${REPO_DIR}"
+              git fetch --all --prune
+              git reset --hard origin/main
+            fi
+
+            # -------- Sanity checks
+            cd "${REPO_DIR}"
+            echo "[INFO] Repo content:"
+            ls -la
+
+            if [ ! -d "ansible" ]; then
+              echo "[ERROR] Folder 'ansible/' tidak ditemukan di root repo."
+              exit 1
+            fi
+
+            if [ ! -f "ansible/playbooks/deploy.yml" ]; then
+              echo "[ERROR] Playbook 'ansible/playbooks/deploy.yml' tidak ditemukan."
+              echo "[INFO] Isi ansible/playbooks:"
+              ls -la ansible/playbooks || true
+              exit 1
+            fi
+
+            # -------- Run ansible
+            cd ansible
+            echo "[INFO] Ansible version:"
+            ansible --version
+
+            echo "[INFO] Running playbook..."
+            ansible-playbook playbooks/deploy.yml
