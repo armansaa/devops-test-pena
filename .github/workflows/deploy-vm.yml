@@ -1,0 +1,34 @@
+name: Deploy to VM
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    if: contains(github.event.head_commit.message, 'deploy_vm') || contains(github.event.head_commit.message, 'deploy_all')
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy via Ansible on VM1
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VM1_SSH_HOST }}
+        username: ${{ secrets.VM1_SSH_USER }}
+        key: ${{ secrets.VM1_SSH_PRIVATE_KEY }}
+        script: |
+          # Ensure project directory exists
+          mkdir -p ~/projects
+          cd ~/projects
+          
+          # Clone if not exists, else pull
+          if [ ! -d "self-testing" ]; then
+            git clone https://github.com/${{ github.repository }}.git
+            cd self-testing
+          else
+            cd self-testing
+            git pull origin main
+          fi
+          
+          # Run Ansible from VM1
+          cd ansible
+          ansible-playbook playbooks/deploy.yml

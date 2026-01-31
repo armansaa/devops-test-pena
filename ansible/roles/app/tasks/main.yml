@@ -1,0 +1,31 @@
+---
+- name: Install git
+  apt:
+    name: git
+    state: present
+
+- name: Clone application repository
+  git:
+    repo: "{{ app_repo }}"
+    dest: "/home/{{ ansible_user }}/app"
+    version: main
+    force: yes
+  become_user: "{{ ansible_user }}"
+
+- name: Install npm dependencies
+  npm:
+    path: "/home/{{ ansible_user }}/app"
+  become_user: "{{ ansible_user }}"
+
+- name: Stop existing PM2 processes
+  shell: pm2 delete all || true
+  become_user: "{{ ansible_user }}"
+  ignore_errors: yes
+
+- name: Start app with PM2
+  shell: pm2 start /home/{{ ansible_user }}/app/index.js --name "node-app"
+  become_user: "{{ ansible_user }}"
+
+- name: Save PM2 process list
+  shell: pm2 save
+  become_user: "{{ ansible_user }}"

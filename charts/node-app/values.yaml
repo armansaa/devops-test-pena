@@ -1,0 +1,18 @@
+replicaCount: 2
+
+image:
+  repository: gcr.io/<PROJECT_ID>/node-app
+  tag: latest # {"$imagepolicy": "flux-system:node-app:tag"}
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 3000
+
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "200m"

@@ -1,0 +1,23 @@
+---
+- name: Install Node.js repository
+  shell: curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+
+- name: Install Node.js
+  apt:
+    name: nodejs
+    state: present
+    update_cache: yes
+
+- name: Install PM2 globally
+  npm:
+    name: pm2
+    global: yes
+    state: present
+
+- name: Setup PM2 startup script
+  shell: pm2 startup systemd -u {{ ansible_user }} --hp /home/{{ ansible_user }}
+  become: yes
+
+- name: Save PM2 process list
+  shell: pm2 save
+  become_user: "{{ ansible_user }}"
