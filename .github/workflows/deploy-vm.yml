@@ -21,11 +21,11 @@ jobs:
           cd ~/projects
           
           # Clone if not exists, else pull
-          if [ ! -d "self-testing" ]; then
+          if [ ! -d "devops-test" ]; then
             git clone https://github.com/${{ github.repository }}.git
-            cd self-testing
+            cd devops-test
           else
-            cd self-testing
+            cd devops-test
             git pull origin main
           fi
           
