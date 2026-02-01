@@ -16,7 +16,7 @@
 
 - name: Setup PM2 startup script
   shell: pm2 startup systemd -u {{ ansible_user }} --hp /home/{{ ansible_user }}
-  become: yes
+  become: true
 
 - name: Save PM2 process list
   shell: pm2 save

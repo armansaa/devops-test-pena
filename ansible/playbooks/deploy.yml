@@ -1,7 +1,7 @@
 ---
 - name: Deploy Node.js App with PM2
   hosts: app_servers
-  become: yes
+  become: true
   vars:
     app_repo: "https://github.com/armansaa/devops-test-app.git"
   
