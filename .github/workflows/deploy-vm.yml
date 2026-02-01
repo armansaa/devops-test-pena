@@ -54,7 +54,6 @@ jobs:
           ls -la "${REPO_DIR}"
 
           if [ ! -d "${REPO_DIR}/ansible" ] || [ ! -f "${REPO_DIR}/ansible/playbooks/deploy.yml" ]; then
-            echo "[ERROR] Folder 'ansible/' or playbook not found in ${REPO_DIR}." > /dev/null
             echo "[INFO] Contents of ${REPO_DIR}:" > /dev/null
             ls -la "${REPO_DIR}" || true
             echo "[INFO] Contents of ${REPO_DIR}/ansible:" > /dev/null
