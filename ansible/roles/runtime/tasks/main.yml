@@ -14,8 +14,25 @@
     global: yes
     state: present
 
-- name: Setup PM2 startup script
-  shell: pm2 startup systemd -u {{ ansible_user }} --hp /home/{{ ansible_user }}
+- name: Install PM2 systemd unit (no-daemon)
+  template:
+    src: pm2.service.j2
+    dest: /etc/systemd/system/pm2-{{ ansible_user }}.service
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: true
+  become: true
+
+- name: Enable and start PM2 service
+  systemd:
+    name: pm2-{{ ansible_user }}
+    enabled: true
+    state: started
   become: true
 
 - name: Save PM2 process list

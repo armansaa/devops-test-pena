@@ -21,19 +21,26 @@ This project implements a hybrid deployment strategy for a DevOps technical test
 
 ## 🚀 Part A: Traditional Deployment (Ansible + PM2)
 
-This section automates the runtime setup and application deployment on a Google Compute Engine (GCE) VM.
+This section automates the runtime setup and application deployment on two Google Compute Engine (GCE) VMs:
+- VM1: Ansible control node (public SSH access)
+- VM2: App VM (private, behind NAT + Load Balancer)
 
 ### Prerequisites
-- SSH access to the GCE VM.
-- Ansible installed on your local machine or jump host.
+- VM1 can SSH to VM2 (private IP).
+- Ansible installed on VM1.
 
-### Deployment Steps
-1. Update the VM External IP and Username in `ansible/inventory.ini`.
-2. Run the Playbook:
+### Deployment Steps (manual)
+1. Update the VM2 private IP and user in `ansible/inventory.ini`.
+2. Run the playbook from VM1:
    ```bash
    cd ansible
    ansible-playbook playbooks/deploy.yml
    ```
+
+### Deployment Steps (GitHub Actions)
+1. Commit your app changes with a message containing `deploy_vm` or `deploy_all`.
+2. Push to `main`.
+3. GitHub Actions runs `.github/workflows/deploy-vm.yml`, SSHes into VM1, and runs Ansible.
 
 ### Features
 - Automated installation of Node.js 20 & PM2.
@@ -74,9 +81,46 @@ flux bootstrap github \
 ## 🧪 Verification
 
 ### Part A (VM Deployment)
-Access the application via the VM External IP:
+On VM1, verify Ansible connectivity:
 ```bash
-curl http://<VM_IP>:3000
+ansible -i ansible/inventory.ini app_servers -m ping
+```
+
+On VM2, verify the app:
+```bash
+curl http://127.0.0.1:3000/health
+pm2 status
+```
+
+Verify via Load Balancer:
+```bash
+curl http://<LB_IP>/health
+```
+
+Reboot test (A2 requirement):
+```bash
+sudo reboot
+# After VM2 is back:
+pm2 status
+```
+
+### Deliverables Checklist
+- `ansible/inventory.ini` present and points to VM2 private IP
+- `ansible/ansible.cfg` present (inventory configured, host key checking disabled if needed)
+- `ansible/roles/runtime/tasks/main.yml` installs Node.js + PM2 and enables startup
+- `ansible/roles/app/tasks/main.yml` pulls app repo and runs with PM2
+- `README.md` includes setup + verification steps
+- Verified after reboot: `pm2 status` shows `node-app` running
+
+### Makefile (Section A)
+This repo includes a `Makefile` to quickly validate Part A checks.
+Set variables as needed:
+```bash
+make a1
+make a2 APP_USER=<vm2-user>
+make a2-reboot APP_USER=<vm2-user>
+make a3 LB_URL=http://<LB_IP>/health
+make a-all APP_USER=<vm2-user> LB_URL=http://<LB_IP>/health
 ```
 
 ### Part B (K8s Deployment)
