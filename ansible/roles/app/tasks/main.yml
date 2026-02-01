@@ -17,16 +17,16 @@
 
 - name: Install npm dependencies
   npm:
-    path: "/home/{{ ansible_user }}/app"
+    path: "/home/{{ ansible_user }}/app/app"
   become_user: "{{ ansible_user }}"
 
 - name: Stop existing PM2 processes
   shell: pm2 delete all || true
   become_user: "{{ ansible_user }}"
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: Start app with PM2
-  shell: pm2 start /home/{{ ansible_user }}/app/index.js --name "node-app"
+  shell: pm2 start /home/{{ ansible_user }}/app/app/index.js --name "node-app"
   become_user: "{{ ansible_user }}"
 
 - name: Save PM2 process list
