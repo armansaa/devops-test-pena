@@ -3,7 +3,7 @@
   hosts: app_servers
   become: true
   vars:
-    app_repo: "https://github.com/armansaa/devops-test-app.git"
+    app_repo: "https://github.com/armansaa/devops-test-pena.git"
   
   roles:
     - runtime
