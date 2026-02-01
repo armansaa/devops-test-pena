@@ -130,6 +130,17 @@ kubectl get svc node-app-service
 curl http://<K8S_EXTERNAL_IP>
 ```
 
+### Makefile (Section B1)
+Build and test the Docker image locally:
+```bash
+make b1
+```
+
+Customize image name or port:
+```bash
+make b1 IMAGE=devops-test-pena:local B1_PORT=3000
+```
+
 ## 📊 Visibility & Monitoring
 The application provides basic monitoring endpoints:
 - `http://<IP>/health` - Health check status.

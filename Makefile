@@ -4,8 +4,10 @@ INVENTORY ?= ansible/inventory.ini
 GROUP ?= app_servers
 APP_USER ?=
 LB_URL ?=
+IMAGE ?= devops-test-pena:local
+B1_PORT ?= 3000
 
-.PHONY: help a1 a2 a2-reboot a3 a-all
+.PHONY: help a1 a2 a2-reboot a3 a-all b1-build b1-run b1
 
 help:
 	@echo "Usage: make <target> [APP_USER=...] [LB_URL=...]"
@@ -15,6 +17,9 @@ help:
 	@echo "  a2-reboot - Reboot VM2 and verify PM2 app is back"
 	@echo "  a3    - Verify app via Load Balancer"
 	@echo "  a-all - Run a1, a2, a3"
+	@echo "  b1-build - Build Docker image for the app"
+	@echo "  b1-run   - Run container and verify /health locally"
+	@echo "  b1       - Run b1-build and b1-run"
 
 # A1: Ansible connectivity
 
@@ -55,3 +60,18 @@ a3:
 
 a-all: a1 a2 a3
 	@echo "All Part A checks completed."
+
+# B1: Docker build + run verification
+
+b1-build:
+	docker build -t $(IMAGE) app
+
+b1-run:
+	@cid=$$(docker run -d -p $(B1_PORT):3000 $(IMAGE)); \
+	sleep 2; \
+	curl -fsS http://127.0.0.1:$(B1_PORT)/health; \
+	echo ""; \
+	docker rm -f $$cid >/dev/null
+
+b1: b1-build b1-run
+	@echo "B1 checks completed."
