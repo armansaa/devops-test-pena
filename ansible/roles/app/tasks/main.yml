@@ -10,7 +10,10 @@
     dest: "/home/{{ ansible_user }}/app"
     version: main
     force: yes
+    depth: 1
   become_user: "{{ ansible_user }}"
+  environment:
+    GIT_TERMINAL_PROMPT: "0"
 
 - name: Install npm dependencies
   npm:

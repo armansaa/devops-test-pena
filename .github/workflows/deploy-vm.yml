@@ -12,6 +12,7 @@ jobs:
     - name: Deploy via Ansible on VM1
       uses: appleboy/ssh-action@v1.0.3
       with:
+        command_timeout: 30m
         host: ${{ secrets.VM1_SSH_HOST }}
         username: ${{ secrets.VM1_SSH_USER }}
         key: ${{ secrets.VM1_SSH_PRIVATE_KEY }}
