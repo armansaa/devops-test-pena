@@ -54,20 +54,20 @@ jobs:
           ls -la "${REPO_DIR}"
 
           if [ ! -d "${REPO_DIR}/ansible" ] || [ ! -f "${REPO_DIR}/ansible/playbooks/deploy.yml" ]; then
-            echo "[ERROR] Folder 'ansible/' atau playbook tidak ditemukan di ${REPO_DIR}."
-            echo "[INFO] Isi ${REPO_DIR}:"
+            echo "[ERROR] Folder 'ansible/' or playbook not found in ${REPO_DIR}." > /dev/null
+            echo "[INFO] Contents of ${REPO_DIR}:" > /dev/null
             ls -la "${REPO_DIR}" || true
-            echo "[INFO] Isi ${REPO_DIR}/ansible:"
+            echo "[INFO] Contents of ${REPO_DIR}/ansible:" > /dev/null
             ls -la "${REPO_DIR}/ansible" || true
-            echo "[INFO] Isi ${REPO_DIR}/ansible/playbooks:"
+            echo "[INFO] Contents of ${REPO_DIR}/ansible/playbooks:" > /dev/null
             ls -la "${REPO_DIR}/ansible/playbooks" || true
             exit 1
           fi
 
           # -------- Run ansible
           cd "${REPO_DIR}/ansible"
-          echo "[INFO] Ansible version:"
+          echo "[INFO] Ansible version:" > /dev/null
           ansible --version
 
-          echo "[INFO] Running playbook..."
+          echo "[INFO] Running playbook..." 
           ansible-playbook playbooks/deploy.yml -e "app_repo=${REPO_URL}"
