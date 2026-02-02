@@ -22,6 +22,12 @@ kubelet:
 nodeExporter:
   enabled: false
 
+prometheusOperator:
+  kubeletService:
+    enabled: false
+  kubeletEndpointsEnabled: false
+  kubeletEndpointSliceEnabled: false
+
 prometheus:
   prometheusSpec:
     retention: 24h
