@@ -5,9 +5,28 @@ image:
   tag: latest # {"$imagepolicy": "flux-system:node-app:tag"}
 
 service:
-  type: LoadBalancer
+  type: ClusterIP
   port: 80
   targetPort: 3000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  host: ""
+  path: /
+  pathType: Prefix
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+  qps:
+    enabled: false
+    metricName: http_requests_per_second
+    targetAverageValue: "20"
 
 resources:
   requests:

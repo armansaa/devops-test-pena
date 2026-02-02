@@ -6,6 +6,25 @@ service:
   type: ClusterIP
   port: 80
   targetPort: 3000
+
+ingress:
+  enabled: true
+  className: gce
+  annotations: {}
+  host: ""
+  path: /
+  pathType: Prefix
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+  qps:
+    enabled: true
+    metricName: http_requests_per_second
+    targetAverageValue: "20"
 resources:
   requests:
     memory: "128Mi"
