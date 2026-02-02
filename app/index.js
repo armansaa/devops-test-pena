@@ -3,6 +3,21 @@ const os = require('os');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const startTimeMs = Date.now();
+let totalRequests = 0;
+const requestTimestamps = [];
+
+app.use((req, res, next) => {
+  totalRequests += 1;
+  const now = Date.now();
+  requestTimestamps.push(now);
+
+  // Keep a rolling 60-second window for near-real-time QPS.
+  while (requestTimestamps.length && requestTimestamps[0] <= now - 60000) {
+    requestTimestamps.shift();
+  }
+  next();
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -21,10 +36,20 @@ app.get('/', (req, res) => {
 
 // Metrics endpoint (for basic monitoring)
 app.get('/metrics', (req, res) => {
+  const uptimeSeconds = process.uptime();
+  const qpsAverage = uptimeSeconds > 0 ? totalRequests / uptimeSeconds : 0;
+  const qpsLastMinute = requestTimestamps.length / 60;
+
   res.json({
-    uptime: process.uptime(),
+    uptime: uptimeSeconds,
     memory: process.memoryUsage(),
-    cpu: os.loadavg()
+    cpu: os.loadavg(),
+    requests: {
+      total: totalRequests,
+      qpsAverage: Number(qpsAverage.toFixed(4)),
+      qpsLastMinute: Number(qpsLastMinute.toFixed(4)),
+      startedAt: new Date(startTimeMs).toISOString()
+    }
   });
 });
 

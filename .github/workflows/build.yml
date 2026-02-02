@@ -3,7 +3,9 @@ name: Build and Push
 on:
   push:
     branches: [main]
-    paths: ['app/**']
+    paths:
+      - "app/**"
+      - ".github/workflows/build.yml"
 
 env:
   APP_NAME: node
