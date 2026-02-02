@@ -4,7 +4,7 @@ metadata:
   name: node-app
   namespace: raw-app
 spec:
-  ingressClassName: gce
+  kubernetes.io/ingress.class: "gce"
   rules:
     - http:
         paths:
