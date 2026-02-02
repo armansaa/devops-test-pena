@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: flux-system
+resources:
+  - namespace.yaml
+  - helmrepository.yaml
+  - kube-prometheus-stack-helmrelease.yaml
+  - prometheus-adapter-helmrelease.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: monitoring-values
+    files:
+      - kube-prometheus-stack-values.yaml
+      - prometheus-adapter-values.yaml

@@ -1,21 +1,28 @@
 const express = require('express');
 const os = require('os');
+const client = require('prom-client');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const startTimeMs = Date.now();
-let totalRequests = 0;
-const requestTimestamps = [];
+const register = new client.Registry();
+client.collectDefaultMetrics({ register });
+
+const httpRequestsTotal = new client.Counter({
+  name: 'http_requests_total',
+  help: 'Total number of HTTP requests',
+  labelNames: ['method', 'route', 'status_code'],
+  registers: [register]
+});
 
 app.use((req, res, next) => {
-  totalRequests += 1;
-  const now = Date.now();
-  requestTimestamps.push(now);
-
-  // Keep a rolling 60-second window for near-real-time QPS.
-  while (requestTimestamps.length && requestTimestamps[0] <= now - 60000) {
-    requestTimestamps.shift();
-  }
+  res.on('finish', () => {
+    const route = req.route && req.route.path ? req.route.path : req.path;
+    httpRequestsTotal.inc({
+      method: req.method,
+      route,
+      status_code: String(res.statusCode)
+    });
+  });
   next();
 });
 
@@ -34,23 +41,10 @@ app.get('/', (req, res) => {
   });
 });
 
-// Metrics endpoint (for basic monitoring)
-app.get('/metrics', (req, res) => {
-  const uptimeSeconds = process.uptime();
-  const qpsAverage = uptimeSeconds > 0 ? totalRequests / uptimeSeconds : 0;
-  const qpsLastMinute = requestTimestamps.length / 60;
-
-  res.json({
-    uptime: uptimeSeconds,
-    memory: process.memoryUsage(),
-    cpu: os.loadavg(),
-    requests: {
-      total: totalRequests,
-      qpsAverage: Number(qpsAverage.toFixed(4)),
-      qpsLastMinute: Number(qpsLastMinute.toFixed(4)),
-      startedAt: new Date(startTimeMs).toISOString()
-    }
-  });
+// Prometheus metrics endpoint.
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', register.contentType);
+  res.end(await register.metrics());
 });
 
 app.listen(PORT, '0.0.0.0', () => {

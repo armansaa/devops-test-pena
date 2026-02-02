@@ -5,3 +5,5 @@ resources:
   - image-automation/
   - gitops-helm-kustomization.yaml
   - gitops-raw-kustomization.yaml
+  - gitops-monitoring-kustomization.yaml
+  - gitops-monitoring-scrape-kustomization.yaml
