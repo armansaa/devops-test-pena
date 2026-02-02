@@ -6,7 +6,7 @@ This project implements a hybrid deployment strategy for a DevOps technical test
 
 ```text
 .
-├── .github/workflows/      # CI Pipeline (Build & Push Docker Image)
+├── .github/workflows/      # CI Pipeline (VM & Container)
 ├── ansible/                # Part A - Ansible & PM2 Configuration
 │   ├── roles/              # Ansible Roles (runtime & app)
 │   ├── playbooks/          # Main Deployment Playbook
@@ -19,129 +19,114 @@ This project implements a hybrid deployment strategy for a DevOps technical test
 └── flux/                   # Part B - FluxCD GitOps Manifests
 ```
 
-## 🚀 Part A: Traditional Deployment (Ansible + PM2)
+## 📐 Hybrid Architecture Overview
 
-This section automates the runtime setup and application deployment on two Google Compute Engine (GCE) VMs:
-- VM1: Ansible control node (public SSH access)
-- VM2: App VM (private, behind NAT + Load Balancer)
+```mermaid
+graph TD
+    subgraph PartA [Part A: VM Based Architecture]
+        User -->|HTTP| LBA[GCP Load Balancer]
+        LBA -->|Port 3000| VM2[VM2: App Server]
+        VM1[VM1: Ansible] -.->|SSH Private IP| VM2
+        VM2 -->|Outbound| NAT[Cloud NAT]
+    end
 
-### Prerequisites
-- VM1 can SSH to VM2 (private IP).
-- Ansible installed on VM1.
+    %% Invisible link to force Part B below Part A
+    PartA ~~~ PartB
 
-### Deployment Steps (manual)
-1. Update the VM2 private IP and user in `ansible/inventory.ini`.
-2. Run the playbook from VM1:
-   ```bash
-   cd ansible
-   ansible-playbook playbooks/deploy.yml
-   ```
+    subgraph PartB [Part B: GKE Architecture]
+        User -->|HTTP| SVC[K8s Service/LB]
+        SVC --> POD[Pod: Node App]
+        HPA[HPA] -.->|Scale| POD
+        Flux[FluxCD] <-->|Sync| Git[Git Repo]
+        Flux -->|Updates| POD
+    end
+```
 
-### Deployment Steps (GitHub Actions)
-1. Commit your app changes with a message containing `deploy_vm` or `deploy_all`.
-2. Push to `main`.
-3. GitHub Actions runs `.github/workflows/deploy-vm.yml`, SSHes into VM1, and runs Ansible.
+## 🚀 Part A: Traditional Deployment (VM-Based)
 
-### Features
-- Automated installation of Node.js 20 & PM2.
-- PM2 startup configuration (systemd persistence).
-- Zero-downtime application restart management.
+### A1 - Architecture
+The infrastructure consists of two Google Compute Engine (GCE) VMs in `asia-southeast2-a` default subnet:
+
+| Component | Description | Network |
+|-----------|-------------|---------|
+| **VM1** | Ansible Server + Kubectl Client | Public IP (EIP) |
+| **VM2** | Application Server (Node.js) | Private IP Only |
+
+**Connectivity:**
+- **VM1 -> VM2**: SSH connection via Private IP.
+- **VM2 -> Internet**: Outbound traffic routed through Cloud NAT Gateway.
+- **Internet -> VM2**: Inbound traffic managed by GCP Load Balancer.
+
+**Diagram:**
+```mermaid
+graph TD
+    User[User/Browser] -->|HTTP| LB[GCP Load Balancer]
+    LB -->|Port 3000| VM2[VM2: Node.js App]
+    
+    subgraph VPC [VPC Network]
+        VM1[VM1: Ansible & Kubectl] -->|SSH| VM2
+        VM2 -->|Outbound| NAT[Cloud NAT GW]
+    end
+    
+    NAT --> Internet
+```
+
+### A2 - Automation & Runtime
+- **Tools**: Ansible for configuration management.
+- **Roles**: 
+  - `runtime`: Installs Node.js 20, PM2, and configures `pm2 startup` for boot persistence.
+  - `app`: Clones repository and starts application.
+- **Verification**: Application auto-starts after VM reboot via systemd.
+
+### A3 - CI/CD Workflow
+- **Trigger**: Commit message contains `deploy_vm` or `deploy_all`.
+- **Pipeline**: GitHub Actions SSHs into VM1 -> VM1 runs Ansible Playbook -> Deploys to VM2.
+- **Access**: App available at `http://34.128.87.170/`.
 
 ---
 
-## ☸️ Part B: Modern Deployment (Docker + FluxCD GitOps)
+## ☸️ Part B: Containerization & Kubernetes (GKE)
 
-A modern containerized strategy where the Kubernetes cluster automatically synchronizes with the Git repository.
+### B1 - Dockerization
+- **Dockerfile**: Located in `./app/Dockerfile`.
+- **Build**: Standard multi-stage build or simple node base image.
 
-### Tech Stack
-- **CI**: GitHub Actions (Build & Push to GCR).
-- **CD**: FluxCD (GitOps Controller).
-- **Automation**: Flux Image Automation (Auto-detect & update image tags).
-- **Package Manager**: Helm (via Flux HelmRelease).
+### B2 - CI/CD Pipeline
+- **Trigger**: Commit message contains `build` or `deploy_all`.
+- **Flow**:
+  1. **Source**: GitHub Actions triggers on push.
+  2. **Build**: Builds Docker image and tags with `github.sha`.
+  3. **Push**: Pushes image to Google Container Registry (GCR).
+  4. **Deploy**: FluxCD detects new image -> updates Git config -> Syncs GKE.
 
-### GitOps Workflow
-1. **Push Code**: Developer pushes changes to the `main` branch.
-2. **CI Build**: GitHub Actions builds the Docker image and pushes it to Google Container Registry (GCR).
-3. **Detection**: Flux `ImageRepository` detects the new tag in GCR.
-4. **Auto-Update**: Flux `ImageUpdateAutomation` updates the image tag in `charts/node-app/values.yaml` and commits the change back to Git.
-5. **Sync**: Flux `HelmRelease` detects the Git commit and reconciles the state in the Kubernetes cluster.
+### B3 - Deployment Strategy
+The application is deployed using two distinct methods for demonstration:
 
-### Setup FluxCD
-```bash
-flux bootstrap github \
-  --owner=<GITHUB_USER> \
-  --repository=devops-test-pena \
-  --branch=main \
-  --path=flux/clusters/devops-test \
-  --personal
-```
+1. **Helm Release**:
+   - Managed via FluxCD HelmController.
+   - **URL**: `http://34.96.120.171`
+   
+2. **Raw Manifests**:
+   - Standard Kubernetes `Deployment` and `Service` YAMLs.
+   - **URL**: `http://34.110.159.92`
+
+**Scaling (HPA):**
+- Horizontal Pod Autoscaler configured based on CPU and Memory usage.
 
 ---
 
-## 🧪 Verification
+## 📊 Part C: Visibility & Monitoring
 
-### Part A (VM Deployment)
-On VM1, verify Ansible connectivity:
-```bash
-ansible -i ansible/inventory.ini app_servers -m ping
-```
+Centralized monitoring stack using Prometheus and Grafana.
 
-On VM2, verify the app:
-```bash
-curl http://127.0.0.1:3000/health
-pm2 status
-```
+**Access:**
+- **Dashboard URL**: [Grafana Dashboard](http://34.101.189.60/d/apps-helm-raw-v3/apps-monitoring-helm-app-and-raw-app?orgId=1&from=now-5m&to=now&timezone=browser&var-datasource=prometheus&var-namespace=$__all&var-pod=$__all&var-job=$__all&shareView=public_dashboard)
+- **Credentials**: `admin` / `devops-test-pena`
+- **Sample monitoring dashboard**: <img width="1180" height="753" alt="image" src="https://github.com/user-attachments/assets/9b625b39-236b-4166-a363-2420edb16442" />
 
-Verify via Load Balancer:
-```bash
-curl http://<LB_IP>/health
-```
 
-Reboot test (A2 requirement):
-```bash
-sudo reboot
-# After VM2 is back:
-pm2 status
-```
-
-### Deliverables Checklist
-- `ansible/inventory.ini` present and points to VM2 private IP
-- `ansible/ansible.cfg` present (inventory configured, host key checking disabled if needed)
-- `ansible/roles/runtime/tasks/main.yml` installs Node.js + PM2 and enables startup
-- `ansible/roles/app/tasks/main.yml` pulls app repo and runs with PM2
-- `README.md` includes setup + verification steps
-- Verified after reboot: `pm2 status` shows `node-app` running
-
-### Makefile (Section A)
-This repo includes a `Makefile` to quickly validate Part A checks.
-Set variables as needed:
-```bash
-make a1
-make a2 APP_USER=<vm2-user>
-make a2-reboot APP_USER=<vm2-user>
-make a3 LB_URL=http://<LB_IP>/health
-make a-all APP_USER=<vm2-user> LB_URL=http://<LB_IP>/health
-```
-
-### Part B (K8s Deployment)
-Get the LoadBalancer External IP and access the application:
-```bash
-kubectl get svc node-app-service
-curl http://<K8S_EXTERNAL_IP>
-```
-
-### Makefile (Section B1)
-Build and test the Docker image locally:
-```bash
-make b1
-```
-
-Customize image name or port:
-```bash
-make b1 IMAGE=devops-test-pena:local B1_PORT=3000
-```
-
-## 📊 Visibility & Monitoring
-The application provides basic monitoring endpoints:
-- `http://<IP>/health` - Health check status.
-- `http://<IP>/metrics` - Basic system and performance metrics.
+**Key Metrics Monitored:**
+- CPU Usage
+- Memory Usage
+- Pod Status/Availability
+- Requests Per Second (RPS)
