@@ -7,6 +7,7 @@ metadata:
     app: node-app
   annotations:
     cloud.google.com/neg: '{"ingress": true}'
+    cloud.google.com/backend-config: '{"default": "node-app-backendconfig"}'
 spec:
   selector:
     app: node-app

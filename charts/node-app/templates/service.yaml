@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: {{ .Chart.Name }}-service
   annotations:
+    cloud.google.com/backend-config: '{"default": "{{ .Chart.Name }}-backendconfig"}'
     {{- with .Values.service.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
