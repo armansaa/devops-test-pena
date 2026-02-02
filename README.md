@@ -137,3 +137,32 @@ Centralized monitoring stack using Prometheus and Grafana.
 - Memory Usage
 - Pod Status/Availability
 - Requests Per Second (RPS)
+
+---
+
+## 🧪 Verification & Testing
+
+A `Makefile` is provided to simplify verification of both VM-based and Container-based deployments.
+
+**Basic Usage:** `make <target> [VARIABLES...]`
+
+### Part A: VM Deployment (Ansible/PM2)
+| Target | Description | Required Variables |
+|--------|-------------|--------------------|
+| `make a1` | Verify Ansible connectivity to VM2 | - |
+| `make a2` | Verify Node.js & PM2 status on VM2 | `APP_USER=<remote_user>` |
+| `make a2-reboot`| Test VM2 reboot & PM2 persistence | `APP_USER=<remote_user>` |
+| `make a3` | Verify access via Load Balancer | `LB_URL=<http://LB_IP/health>` |
+| `make a-all` | Run all checks (a1, a2, a3) | `APP_USER=... LB_URL=...` |
+
+**Example:**
+```bash
+make a-all APP_USER=armansaa LB_URL=http://34.128.87.170/health
+```
+
+### Part B: Container (Docker)
+| Target | Description |
+|--------|-------------|
+| `make b1-build` | Build local Docker image |
+| `make b1-run` | Run container locally & check `/health` |
+| `make b1` | Run both build and run checks |
