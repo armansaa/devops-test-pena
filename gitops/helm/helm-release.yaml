@@ -18,4 +18,5 @@ spec:
   valuesFrom:
     - kind: ConfigMap
       name: node-app-helm-values
+      namespace: flux-system
       valuesKey: values.yaml
