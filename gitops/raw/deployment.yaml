@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: node-app
-          image: armansaa/devops-test-pena:node.prod-6220629-260202003002 # {"$imagepolicy": "flux-system:node-app"}
+          image: armansaa/devops-test-pena:node.prod-e41c694-260202151128 # {"$imagepolicy": "flux-system:node-app"}
           imagePullPolicy: Always
           ports:
             - name: metrics

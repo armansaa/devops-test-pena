@@ -1,14 +1,13 @@
 replicaCount: 1
 image:
   repository: armansaa/devops-test-pena
-  tag: node.prod-6220629-260202003002 # {"$imagepolicy": "flux-system:node-app:tag"}
+  tag: node.prod-e41c694-260202151128 # {"$imagepolicy": "flux-system:node-app:tag"}
 service:
   type: ClusterIP
   port: 80
   targetPort: 3000
   annotations:
     cloud.google.com/neg: '{"ingress": true}'
-
 ingress:
   enabled: true
   annotations:
@@ -16,7 +15,6 @@ ingress:
   host: ""
   path: /
   pathType: Prefix
-
 autoscaling:
   enabled: true
   minReplicas: 1
