@@ -8,8 +8,12 @@ grafana:
   service:
     type: LoadBalancer
 
+# Autopilot: Don't scrape/control/manage core k8s components
 kubeProxy:
   enabled: false
+  service:
+    enabled: false
+
 kubeScheduler:
   enabled: false
 kubeControllerManager:
@@ -36,3 +40,20 @@ prometheus:
     retention: 24h
     serviceMonitorSelectorNilUsesHelmValues: false
     podMonitorSelectorNilUsesHelmValues: false
+
+    # Scrape ServiceMonitor/PodMonitor in namespace apps
+    serviceMonitorNamespaceSelector:
+      matchNames:
+        - monitoring
+        - helm-app
+        - raw-app
+    podMonitorNamespaceSelector:
+      matchNames:
+        - monitoring
+        - helm-app
+        - raw-app
+
+  
+    serviceMonitorSelector: {}
+    podMonitorSelector: {}
+
