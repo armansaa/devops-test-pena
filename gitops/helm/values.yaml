@@ -1,7 +1,7 @@
 replicaCount: 1
 image:
   repository: armansaa/devops-test-pena
-  tag: node.prod-e41c694-260202151128 # {"$imagepolicy": "flux-system:node-app:tag"}
+  tag: node.prod-4f24b8d-260202180224 # {"$imagepolicy": "flux-system:node-app:tag"}
 service:
   type: ClusterIP
   port: 80
