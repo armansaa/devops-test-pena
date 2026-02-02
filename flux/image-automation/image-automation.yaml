@@ -32,6 +32,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: devops-test-repo
+    namespace: flux-system
   git:
     checkout:
       ref:
@@ -40,7 +41,7 @@ spec:
       author:
         email: fluxcdbot@users.noreply.github.com
         name: fluxcdbot
-      messageTemplate: 'Update image to {{range .Updated.Images}}{{println .}}{{end}}'
+      messageTemplate: 'Update image to {{range .Changed.Changes}}{{println .OldValue "->" .NewValue}}{{end}}'
     push:
       branch: main
   update:
