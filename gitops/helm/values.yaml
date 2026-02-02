@@ -23,10 +23,10 @@ autoscaling:
   maxReplicas: 3
   targetCPUUtilizationPercentage: 70
   targetMemoryUtilizationPercentage: 80
-  qps:
-    enabled: true
-    metricName: http_requests_per_second
-    targetAverageValue: "20"
+  # qps:
+  #   enabled: true
+  #   metricName: http_requests_per_second
+  #   targetAverageValue: "20"
 resources:
   requests:
     memory: "128Mi"
