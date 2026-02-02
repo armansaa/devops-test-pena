@@ -34,7 +34,7 @@ app.get('/health', (req, res) => {
 // Main endpoint
 app.get('/', (req, res) => {
   const payload = {
-    message: 'Testing deploy using ansible and workflow!',
+    message: 'Testing deploy into Kubernetes!!!',
     hostname: os.hostname(),
     version: process.env.APP_VERSION || '1.0.0',
     env: process.env.NODE_ENV || 'development',
