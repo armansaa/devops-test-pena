@@ -8,3 +8,5 @@ spec:
   ref:
     branch: main
   url: https://github.com/armansaa/devops-test-pena.git
+  secretRef:
+    name: devops-test-repo-auth
