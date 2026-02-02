@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: node-app-helm
+  namespace: monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+      - helm-app
+  selector:
+    matchLabels:
+      app: node-app
+  podMetricsEndpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
