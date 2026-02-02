@@ -5,8 +5,6 @@ metadata:
   namespace: raw-app
   labels:
     app: node-app
-  annotations:
-    cloud.google.com/neg: '{"ingress": true}'
 spec:
   selector:
     app: node-app
