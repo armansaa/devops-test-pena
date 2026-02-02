@@ -16,7 +16,14 @@ This project implements a hybrid deployment strategy for a DevOps technical test
 │   ├── Dockerfile          # Container Definition
 │   └── index.js            # Main Logic
 ├── charts/node-app/        # Part B - Helm Chart for Kubernetes
-└── flux/                   # Part B - FluxCD GitOps Manifests
+├── flux/                   # Part B - FluxCD Configuration
+│   ├── clusters/           # FluxCD clusters configuration
+│   └── kustomization.yaml  # FluxCD Root Kustomization
+├── gitops/                 # Part B - GitOps Manifests
+│   ├── helm/               # Helm Release Manifests
+│   ├── raw/                # Raw Kubernetes Manifests
+│   └── monitoring/         # Monitoring Stack (Prometheus/Grafana)
+└── Makefile                # Helper make commands
 ```
 
 ## 📐 Hybrid Architecture Overview
