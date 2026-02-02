@@ -8,6 +8,20 @@ grafana:
   service:
     type: LoadBalancer
 
+kubeProxy:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubelet:
+  enabled: false
+
+nodeExporter:
+  enabled: false
+
 prometheus:
   prometheusSpec:
     retention: 24h
