@@ -1,0 +1,16 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: gitops-raw
+  namespace: flux-system
+spec:
+  interval: 5m
+  path: ./gitops/raw
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: devops-test-repo
+    namespace: flux-system
+  targetNamespace: raw-app
+  wait: true
+  timeout: 3m

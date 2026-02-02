@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-app
+  namespace: raw-app
+  labels:
+    app: node-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-app
+  template:
+    metadata:
+      labels:
+        app: node-app
+    spec:
+      containers:
+        - name: node-app
+          image: armansaa/devops-test-pena:latest # {"$imagepolicy": "flux-system:node-app"}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10

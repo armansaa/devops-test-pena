@@ -1,0 +1,18 @@
+replicaCount: 1
+
+image:
+  repository: armansaa/devops-test-pena
+  tag: latest # {"$imagepolicy": "flux-system:node-app:tag"}
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "200m"

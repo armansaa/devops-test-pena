@@ -1,14 +1,11 @@
----
 apiVersion: image.toolkit.fluxcd.io/v1beta2
 kind: ImageRepository
 metadata:
   name: node-app
   namespace: flux-system
 spec:
-  image: gcr.io/<PROJECT_ID>/node-app
+  image: armansaa/devops-test-pena
   interval: 1m
-  secretRef:
-    name: gcr-credentials
 ---
 apiVersion: image.toolkit.fluxcd.io/v1beta2
 kind: ImagePolicy
@@ -18,8 +15,11 @@ metadata:
 spec:
   imageRepositoryRef:
     name: node-app
+  filterTags:
+    pattern: '^node\.prod-[a-f0-9]+-(?P<ts>[0-9]{12})$'
+    extract: '$ts'
   policy:
-    alphabetical:
+    numerical:
       order: asc
 ---
 apiVersion: image.toolkit.fluxcd.io/v1beta1
@@ -44,5 +44,5 @@ spec:
     push:
       branch: main
   update:
-    path: ./charts/node-app
+    path: ./gitops
     strategy: Setters

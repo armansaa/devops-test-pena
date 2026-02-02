@@ -1,0 +1,21 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: node-app-helm
+  namespace: flux-system
+spec:
+  interval: 5m
+  targetNamespace: helm-app
+  install:
+    createNamespace: true
+  chart:
+    spec:
+      chart: ./charts/node-app
+      sourceRef:
+        kind: GitRepository
+        name: devops-test-repo
+        namespace: flux-system
+  valuesFrom:
+    - kind: ConfigMap
+      name: node-app-helm-values
+      valuesKey: values.yaml
