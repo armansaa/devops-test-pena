@@ -89,14 +89,14 @@ graph TD
 
 ### B1 - Dockerization
 - **Dockerfile**: Located in `./app/Dockerfile`.
-- **Build**: Standard multi-stage build or simple node base image.
+- **Build**: Use simple node base image.
 
 ### B2 - CI/CD Pipeline
 - **Trigger**: Commit message contains `build` or `deploy_all`.
 - **Flow**:
   1. **Source**: GitHub Actions triggers on push.
   2. **Build**: Builds Docker image and tags with `github.sha`.
-  3. **Push**: Pushes image to Google Container Registry (GCR).
+  3. **Push**: Pushes image to Docker Hub.
   4. **Deploy**: FluxCD detects new image -> updates Git config -> Syncs GKE.
 
 ### B3 - Deployment Strategy
