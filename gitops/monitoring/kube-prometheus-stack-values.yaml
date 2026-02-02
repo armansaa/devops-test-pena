@@ -22,6 +22,9 @@ kubelet:
 nodeExporter:
   enabled: false
 
+coreDns:
+  enabled: false
+
 prometheusOperator:
   kubeletService:
     enabled: false
