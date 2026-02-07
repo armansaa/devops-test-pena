@@ -128,7 +128,7 @@ Centralized monitoring stack using Prometheus and Grafana.
 
 **Access:**
 - **Dashboard URL**: [Grafana Dashboard](http://34.101.189.60/d/monitoring-apps-helm-and-raw/apps-monitoring-devops-test?orgId=1&from=now-1h&to=now&timezone=browser&var-datasource=prometheus&var-namespace=$__all&var-pod=$__all&refresh=10s)
-- **Credentials**: `admin` / `devops-test-pena`
+- **Credentials**: `viewer` / `devops-test-pena`
 - **Sample monitoring dashboard**: <img width="1180" height="753" alt="image" src="https://github.com/user-attachments/assets/9b625b39-236b-4166-a363-2420edb16442" />
 
 
